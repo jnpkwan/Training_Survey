@@ -244,6 +244,7 @@
 
 <script>
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRUJArbAlbP9aGCFu-8N42OPmiBAXcEeF0SdT26JiBj2JlLs8A6C5DFNZmQtMfnLXXukvVAwlE3NfIz/pub?gid=197613731&single=true&output=csv';
+const PROXY = 'https://api.allorigins.win/raw?url=';
 
 // ── CSV PARSER ──
 function splitCSVLine(line) {
@@ -295,7 +296,7 @@ const BAR_COLORS = ['#E53935','#F59E0B','#90CAF9','#4CAF50','#22A749'];
 // ── LOAD ──
 async function loadData() {
   try {
-    const res = await fetch(SHEET_CSV_URL + '&cachebust=' + Date.now());
+    const res = await fetch(PROXY + encodeURIComponent(SHEET_CSV_URL + '&cachebust=' + Date.now()));
     const text = await res.text();
     // Detect if Google returned a login/error page instead of CSV
     if (text.trim().startsWith('<!') || text.trim().startsWith('<html')) {
