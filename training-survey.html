@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Training Effectiveness Survey — Acacia Home Builders</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%2322A749'/><circle cx='16' cy='12' r='7' fill='%231B4DA0'/><rect x='14' y='18' width='4' height='8' rx='2' fill='%231B4DA0'/></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='5' fill='%23FFFFFF'/><ellipse cx='16' cy='12' rx='10' ry='8.5' fill='%2322A749'/><ellipse cx='9' cy='14.5' rx='5.5' ry='5' fill='%2322A749'/><ellipse cx='23' cy='14.5' rx='5.5' ry='5' fill='%2322A749'/><ellipse cx='16' cy='11' rx='8' ry='7' fill='%2322A749'/><rect x='14' y='20' width='4' height='9' rx='2' fill='%231B4DA0'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='28' fill='%23FFFFFF'/><ellipse cx='90' cy='68' rx='56' ry='48' fill='%2322A749'/><ellipse cx='51' cy='82' rx='31' ry='28' fill='%2322A749'/><ellipse cx='129' cy='82' rx='31' ry='28' fill='%2322A749'/><ellipse cx='90' cy='62' rx='45' ry='39' fill='%2322A749'/><rect x='79' y='112' width='22' height='50' rx='11' fill='%231B4DA0'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700&family=Open+Sans:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
@@ -549,17 +550,38 @@ form.addEventListener('submit', function(e) {
     q20: 'entry.707706985',
   };
 
-  // ── BUILD FormData for Google Forms ──
-  const gFormData = new FormData();
+  // ── BUILD query string ──
   const localData = new FormData(form);
+  const params = new URLSearchParams();
   for (const [localKey, entryId] of Object.entries(ENTRY_MAP)) {
     const val = localData.get(localKey);
-    if (val !== null && val !== undefined) gFormData.append(entryId, val);
+    if (val !== null && val !== undefined && val !== '') params.append(entryId, val);
   }
 
-  // ── SUBMIT via no-cors fetch (fire-and-forget) ──
-  fetch(FORM_ACTION, { method: 'POST', mode: 'no-cors', body: gFormData })
-    .catch(() => {});
+  // ── SUBMIT via hidden iframe (bypasses CORS restriction) ──
+  let iframe = document.getElementById('gform-iframe');
+  if (!iframe) {
+    iframe = document.createElement('iframe');
+    iframe.id = 'gform-iframe';
+    iframe.name = 'gform-iframe';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+  }
+  const hiddenForm = document.createElement('form');
+  hiddenForm.method = 'POST';
+  hiddenForm.action = FORM_ACTION;
+  hiddenForm.target = 'gform-iframe';
+  hiddenForm.style.display = 'none';
+  for (const [name, value] of params.entries()) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    hiddenForm.appendChild(input);
+  }
+  document.body.appendChild(hiddenForm);
+  hiddenForm.submit();
+  document.body.removeChild(hiddenForm);
 
   progressBar.style.width = '100%';
   form.style.display = 'none';
